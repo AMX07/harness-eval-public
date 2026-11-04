@@ -1,19 +1,19 @@
 # harness-eval
 
-Does the harness matter as much as [HarnessTax](https://arena.ai/blog/coding-agents-harness-tax) says? We held the model fixed (**Claude Haiku 5.5**) and swapped only the harness: **Claude Code** (2.1.316) vs **[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)** (dsh v0.2.1-rc.2, `sdk-minimal` profile: 3 tools, one-line system prompt).
+How much does the harness matter? We held the model fixed (**Claude Haiku 5.5**) and swapped only the harness: **Claude Code** (2.1.316) vs **[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)** (dsh v0.2.1-rc.2, `sdk-minimal` profile: 3 tools, one-line system prompt).
 
-Setup: Terminal-Bench 2.0, 30 random tasks × 3 attempts, 100-turn cap, local Docker on Apple Silicon, one frozen price list. We ran it twice: once with the task defaults, and once with 3× CPU/memory headroom ("x3"). Statistics follow HarnessTax: average per task, then a 10,000-resample task bootstrap for 95% intervals.
+And found Claude Code costs **~1.5×** a DeepSeek Harness on Terminal-Bench. 
 
-## HarnessTax claims, checked
+The main reason behind this is that Claude Code uses almost 60% more tokens due to its larger system prompts, tool definitions and about 12.7k characters of system reminders.
 
-| HarnessTax claim | Verdict | What we found (DSH vs Claude Code) |
-|---|---|---|
-| **The harness changes cost far more than success** | ✅ Validated | Cost differs clearly; the success gap does not (−5.6 and −8.9 pts, both intervals include 0) |
-| Claude Code costs **~1.5×** a minimal harness on Terminal-Bench (geometric mean of per-task cost ratios) | ✅ Validated | Claude Code costs **1.49×** (first run) and **1.54×** (x3); DSH is cheaper on 25 and 26 of 30 tasks |
-| Similar turn counts can cost very different amounts | ✅ Validated | Model calls 0.96× (about equal), cost 0.65× |
-| The tax starts at the first call: Claude Code's initial context is **>10×** a minimal harness | ✅ Validated | First call: 17,625 vs 1,419 prompt tokens (**12.4×**): 12 tool schemas, a 9k-char system prompt and injected reminders vs 3 tools and 46 chars |
-| A simple harness can be competitive | 🟡 Partly | Competitive on cost (~60% fewer tokens), but trails on success in both runs (not significantly) |
-| Models can do better outside their provider's harness ("Claude may not need Claude Code") | ❌ Not supported | Haiku 5.5 scored higher in Claude Code in both runs (72.2% vs 66.7%, then 72.2% vs 63.3%); not significant, but pointing the other way |
+other key findings:
+1. Harness system design can have an impact on benchmark performance.
+
+we saw in a couple of our tasks that the verifier had graded the models as unsuccessful despite all the work done by the model was correct.
+Specifically, the model was (implicitly) tasked with spinning up flask servers that would keep running even if the harness stops running. Because deepseek starts the server using the same its own parent process, the server shuts down when Deepseek Harness is stoped.
+
+2.Claude Code's initial context is **>10×** a minimal harness First call: 17,625 vs 1,419 prompt tokens (**12.4×**): 12 tool schemas, a 9k-char system prompt and injected reminders vs 3 tools and 46 chars |
+
 
 **Caveats:**
 - **"Little effect on success" holds only on average.** Per task, the harness can decide the outcome: `pypi-server` and `hf-model-inference` are 3/3 for Claude Code and 0/3 for DSH in both runs, because dsh's shutdown kills the background server the verifier needs.
