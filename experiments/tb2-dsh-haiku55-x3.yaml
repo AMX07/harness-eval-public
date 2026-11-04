@@ -1,0 +1,24 @@
+# Copy of tb2-dsh-haiku55 with resource headroom (Anthropic infrastructure-noise study):
+# the task's cpus/memory stay the guaranteed allocation, the hard kill limit is 3x.
+# DeepSeek Harness + Claude Haiku 5.5: same tasks, attempts, turn cap and effort as tb2-cc-haiku55,
+# so `hx compare` isolates the harness.
+name: tb2-dsh-haiku55-x3
+description: DeepSeek Harness (sdk-minimal profile) + Haiku 5.5
+dataset: terminal-bench@2.0
+tasks:
+  taskset: tb2-n30-seed2026
+attempts: 3
+concurrency: 4
+timeout_multiplier: 1.0
+harness:
+  agent: harness_eval.agents.deepseek_harness:DeepSeekHarness
+  label: DeepSeek Harness
+  model: anthropic/claude-haiku-5-5
+  kwargs:
+    profile: sdk-minimal        # dsh's documented benchmark profile (BENCHMARK.md)
+    sdk_version: "0.2.1rc2"
+    max_turns: 100              # counted as model responses
+    reasoning_effort: high      # adaptive thinking at high effort on Haiku 5.5
+secrets: [ANTHROPIC_API_KEY]
+environment:
+  resource_limit_multiplier: 3.0   # request = 1x task spec, hard limit = 3x (CPU capped at host count)

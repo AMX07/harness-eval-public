@@ -1,0 +1,22 @@
+# Replication of HarnessTax: Claude Code + Claude Haiku 4.5 on Terminal-Bench 2.0.
+# Blog: 41.1% success, $0.253 and 1.43M tokens per attempt (30 tasks x 3, 100-turn cap, high effort).
+name: tb2-cc-haiku45
+description: Claude Code + Haiku 4.5, HarnessTax replication settings
+dataset: terminal-bench@2.0
+tasks:
+  taskset: tb2-n30-seed2026   # the blog's 30 task IDs are unpublished; this is our seeded random 30
+attempts: 3
+concurrency: 4
+timeout_multiplier: 1.0
+harness:
+  agent: claude-code
+  label: Claude Code
+  model: anthropic/claude-haiku-4-5
+  kwargs:
+    max_turns: 100
+    reasoning_effort: high    # the blog's "high effort setting"
+    version: "2.1.316"        # pinned: every trial runs the same release, and it is pre-installed into the task images
+secrets: [ANTHROPIC_API_KEY]
+baseline:
+  source: harnesstax
+  system: "Claude Haiku 4.5 · Claude Code"

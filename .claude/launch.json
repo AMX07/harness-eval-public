@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "harbor-view",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "harbor", "view", "jobs", "--port", "8080", "--no-build"],
+      "port": 8080
+    }
+  ]
+}

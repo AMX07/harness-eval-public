@@ -1,0 +1,3 @@
+# Two quick tasks for pipeline checks (hx run <exp> --mock uses whatever task set you pass)
+fix-git
+overfull-hbox

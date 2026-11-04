@@ -1,0 +1,45 @@
+# Frozen API price list, USD per million tokens.
+#
+# Every harness is priced from its recorded token usage with this one table,
+# the same method HarnessTax used ("a fixed direct-API price list ... applying
+# the same prices to each model across harnesses"). Change prices by adding a
+# new file and pointing `pricing:` in the experiment at it, so old reports stay
+# reproducible.
+#
+# Cache writes: 1.25x input for the 5-minute TTL, 2x for the 1-hour TTL.
+# Cache reads: 0.1x input.
+as_of: "2026-11-02"
+source: "Anthropic first-party API list prices"
+models:
+  claude-haiku-4-5:
+    input: 1.00
+    output: 5.00
+    cache_write_5m: 1.25
+    cache_write_1h: 2.00
+    cache_read: 0.10
+  claude-haiku-5-5:
+    # Two rate cards chosen by prompt length (input + cache read + cache write).
+    tiers:
+      - max_prompt_tokens: 100000
+        input: 0.10
+        output: 0.50
+        cache_write_5m: 0.125
+        cache_write_1h: 0.20
+        cache_read: 0.01
+      - input: 0.50
+        output: 2.50
+        cache_write_5m: 0.625
+        cache_write_1h: 1.00
+        cache_read: 0.05
+  claude-sonnet-5-5:
+    input: 2.00
+    output: 10.00
+    cache_write_5m: 2.50
+    cache_write_1h: 4.00
+    cache_read: 0.20
+  claude-opus-5-5:
+    input: 4.00
+    output: 20.00
+    cache_write_5m: 5.00
+    cache_write_1h: 8.00
+    cache_read: 0.20

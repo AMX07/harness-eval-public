@@ -1,0 +1,13 @@
+.env
+infra/langfuse/.env
+jobs/
+.cache/
+.venv/
+__pycache__/
+*.pyc
+.claude/worktrees/
+
+# Results and extracted data stay local
+results/*.md
+baselines/*.json
+infra/langfuse/data/
