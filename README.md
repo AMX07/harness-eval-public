@@ -2,27 +2,27 @@
 
 How much does the harness matter? We held the model fixed (**Claude Haiku 5.5**) and swapped only the harness: **Claude Code** (2.1.316) vs **[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)** (dsh v0.2.1-rc.2, `sdk-minimal` profile: 3 tools, one-line system prompt).
 
-And found Claude Code costs **~1.5×** a DeepSeek Harness on Terminal-Bench. 
+We found that, on a typical Terminal-Bench 2.0 task, Claude Code costs **~1.5×** as much as DeepSeek Harness, with no statistically clear difference in success rate.
 
-The main reason behind this is that Claude Code uses almost 60% more tokens due to its larger system prompts, tool definitions and about 12.7k characters of system reminders.
+Much of the gap comes from tokens: Claude Code uses about 60% more tokens per attempt on average, and about 2.5× as many on a typical task. Every call it makes carries a larger system prompt, more tool definitions and about 12.7k characters of system reminders. Most of that repeated text is billed at the cheaper cached-input rate, which is why the cost gap is smaller than the token gap.
 
-other key findings:
-1. Harness system design can have an impact on benchmark performance.
+Other key findings:
 
-we saw in a couple of our tasks that the verifier had graded the models as unsuccessful despite all the work done by the model was correct.
-Specifically, the model was (implicitly) tasked with spinning up flask servers that would keep running even if the harness stops running. Because deepseek starts the server using the same its own parent process, the server shuts down when Deepseek Harness is stoped.
+1. **Harness design can change benchmark scores.** On two tasks (`pypi-server` and `hf-model-inference`), the verifier marked DeepSeek Harness as failing in every attempt, even though the model appears to have done the work. Both tasks implicitly require starting a background server (a PyPI package server, and a Flask inference API) that keeps running after the agent finishes. When DeepSeek Harness shuts down, it kills every process started from its shell session, so the server is gone before the verifier checks it. Claude Code passed both tasks in every attempt.
 
-2.Claude Code's initial context is **>10×** a minimal harness First call: 17,625 vs 1,419 prompt tokens (**12.4×**): 12 tool schemas, a 9k-char system prompt and injected reminders vs 3 tools and 46 chars |
+2. **Claude Code's first call is >10× larger.** Its first request is 17,625 prompt tokens vs 1,419 for DeepSeek Harness (**12.4×**): 12 tool schemas, a 9k-character system prompt and injected reminders, vs 3 tools and a 46-character system prompt.
 
 
 **Caveats:**
-- **"Little effect on success" holds only on average.** Per task, the harness can decide the outcome: `pypi-server` and `hf-model-inference` are 3/3 for Claude Code and 0/3 for DSH in both runs, because dsh's shutdown kills the background server the verifier needs.
+- **"The harness has little effect on success" holds only on average.** Per task, the harness can decide the outcome: `pypi-server` and `hf-model-inference` are 3/3 for Claude Code and 0/3 for DSH in both runs, because dsh's shutdown kills the background server the verifier needs.
 - **Mean cost is fragile.** In the first run DSH's *mean* cost was higher ($0.077 vs $0.062), even though it was cheaper on 25/30 tasks, because of two runaway attempts. Use per-task ratios.
 - **Infrastructure moves results.** DSH's 6 timeouts and out-of-memory kills disappeared with 3× headroom.
 
-**Not tested here:** SWE-bench Lite, Codex or Pi, other models, the blog's "up to 5×" cost spread.
+**Not tested here:** SWE-bench Lite, Codex or Pi, other models, or [HarnessTax](https://arena.ai/blog/coding-agents-harness-tax)'s "up to 5×" cost spread.
 
 ## Results
+
+Terminal-Bench 2.0, 30 random tasks × 3 attempts, 100-turn cap, local Docker on Apple Silicon, one frozen price list. We ran each harness twice: once with the task's default resource limits, and once with 3× CPU and memory headroom ("x3"). Following HarnessTax, results are averaged per task, with 95% intervals from a 10,000-resample task bootstrap.
 
 | Haiku 5.5 | Success [95% CI] | Cost / attempt | Tokens / attempt |
 |---|---|---|---|
