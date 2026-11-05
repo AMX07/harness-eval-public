@@ -4,14 +4,36 @@ How much does the harness matter? We held the model fixed (**Claude Haiku 5.5**)
 
 We found that, on a typical Terminal-Bench 2.0 task, Claude Code costs **~1.5×** as much as DeepSeek Harness, with no statistically clear difference in success rate.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/cost-vs-success-dark.svg">
+  <img alt="Cost per attempt vs success rate for both harnesses in both runs, with 95% intervals" src="docs/img/cost-vs-success-light.svg" width="760">
+</picture>
+
+
 Much of the gap comes from tokens: Claude Code uses about 60% more tokens per attempt on average, and about 2.5× as many on a typical task. Every call it makes carries a larger system prompt, more tool definitions and about 12.7k characters of system reminders. Most of that repeated text is billed at the cheaper cached-input rate, which is why the cost gap is smaller than the token gap.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/cost-ratio-per-task-dark.svg">
+  <img alt="Per-task cost ratio of DeepSeek Harness to Claude Code; 26 of 30 tasks are below 1x, typical task 0.65x" src="docs/img/cost-ratio-per-task-light.svg" width="760">
+</picture>
+
 
 Other key findings:
 
 1. **Harness design can change benchmark scores.** On two tasks (`pypi-server` and `hf-model-inference`), the verifier marked DeepSeek Harness as failing in every attempt, even though the model appears to have done the work. Both tasks implicitly require starting a background server (a PyPI package server, and a Flask inference API) that keeps running after the agent finishes. When DeepSeek Harness shuts down, it kills every process started from its shell session, so the server is gone before the verifier checks it. Claude Code passed both tasks in every attempt.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/success-diff-per-task-dark.svg">
+  <img alt="Per-task difference in passes; pypi-server and hf-model-inference are -3 for DeepSeek Harness" src="docs/img/success-diff-per-task-light.svg" width="760">
+</picture>
+
+
 2. **Claude Code's first call is >10× larger.** Its first request is 17,625 prompt tokens vs 1,419 for DeepSeek Harness (**12.4×**): 12 tool schemas, a 9k-character system prompt and injected reminders, vs 3 tools and a 46-character system prompt.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/first-call-prompt-dark.svg">
+  <img alt="Characters of fixed text in the first request: 51,143 for Claude Code vs 1,615 for DeepSeek Harness" src="docs/img/first-call-prompt-light.svg" width="760">
+</picture>
 
 **Caveats:**
 - **"The harness has little effect on success" holds only on average.** Per task, the harness can decide the outcome: `pypi-server` and `hf-model-inference` are 3/3 for Claude Code and 0/3 for DSH in both runs, because dsh's shutdown kills the background server the verifier needs.

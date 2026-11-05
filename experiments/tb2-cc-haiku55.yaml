@@ -1,6 +1,6 @@
-# Same settings as tb2-cc-haiku45, on Claude Haiku 5.5 (not in the blog, so no baseline).
+# Claude Code + Claude Haiku 5.5 with the HarnessTax settings (high effort, 100-turn cap).
 name: tb2-cc-haiku55
-description: Claude Code + Haiku 5.5, same settings as the replication
+description: Claude Code + Haiku 5.5, HarnessTax settings
 dataset: terminal-bench@2.0
 tasks:
   taskset: tb2-n30-seed2026   # the blog's 30 task IDs are unpublished; this is our seeded random 30
